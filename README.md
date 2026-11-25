@@ -1,86 +1,79 @@
 <div align="center">
-<h1>Queens Clone</h1>
-<img src="docs/logo.svg" width="50%"></img>
+<h1>Queendom</h1>
+<img src="public/static/og-image.png" width="80%"></img>
 <br>
 <br>
-  
+
 ![Badge License](https://img.shields.io/badge/License-MIT-brightgreen)
-![Badge YearCreated](https://img.shields.io/badge/Year_created-2024-orange)
 ![Badge Language](https://img.shields.io/badge/Language-Javascript-cornflowerblue)
 </div>
 
-A clone of the LinkedIn game [queens](https://linkedin.com/games/queens).
-I created this project for learning purposes. My clone has most of the basic
-features of the game as well as my own unique feature for loading maps from
-screenshots (using opencv).
+**Queendom** is a puzzle game inspired by LinkedIn's
+[Queens](https://linkedin.com/games/queens) that you can play as often as you
+like, with your own puzzles.
 
-The clone is live at https://sihlecodes.github.io/queens-clone.
+Built on [queens-clone](https://github.com/sihlecodes/queens-clone) by
+Siphesihle Mhlongo.
 
-## Getting the project to run (locally)
+**Play it at https://anindya-saha.github.io/queendom/**
 
-This project is made entirely out of vanila HTML, CSS, and Javascript. That
-means you could, in theory, just open up the `index.html` and have it work.
-However, I made use of Javascript modules which means that the project does
-require some form of http server to run. I chose to use node.js along with
-express and livereload for my server. So, you can get the project running with
-the following commands (assuming you have git and node installed on your system):
+## How to play
+
+Place exactly one queen in each **row**, **column**, and **color region**. Two
+queens can't touch each other, not even diagonally. Tap a cell once for an X
+(a cell that can't hold a queen) and twice for a queen.
+
+## Features
+
+- **Unlimited play:** replay any puzzle as often as you like. Solved puzzles
+  show a ✓ and your best time.
+- **Board editor:** paint the color regions of a puzzle yourself. Load a
+  picture of the board behind the grid (with adjustable opacity, zoom and
+  position) and trace over it. The editor checks that every color forms one
+  connected region before saving.
+- **Screenshot import:** load a screenshot or photo of a Queens board and the
+  regions are detected with OpenCV, then opened in the editor for you to check.
+- **Auto X's:** placing a queen marks every cell it blocks, and removing it
+  clears them again. Manual X's are never touched. Can be turned off.
+- **Undo:** step back through moves with the Undo button or Ctrl/⌘+Z. A whole
+  drag stroke is one step.
+- **Solutions:** solved puzzles remember their solution so you can view it
+  again, without affecting your best time.
+- **Puzzle library:** rename, reorder (drag) and delete puzzles.
+- **Responsive layout:** single column on phones; board and instructions side
+  by side on wide screens.
+
+Your puzzles, names, order, and solutions are stored in your browser's local
+storage. They stay on your device and are not uploaded anywhere.
+
+## Running locally
+
+Requires [Node.js](https://nodejs.org) 20.19 or newer.
 
 ```shell
-git clone https://github.com/sihlecodes/queens-clone.git
-cd queens-clone
+git clone https://github.com/anindya-saha/queendom.git
+cd queendom
 npm install
 npm start
 ```
 
 Then open http://localhost:3050 in your browser.
 
-## Motivation
+Other commands:
 
-I loved playing the original game so much that I wanted to play more of it, but
-unfortunately you only get one puzzle a day. I looked for clones online but most
-of them have janky controls, or controls that just don't feel as good as the
-controls of the original game. So, I set out to make a clone with almost identical
-feeling controls.
+```shell
+npm test            # run the test suite (Vitest)
+npm run build       # production build into dist/
+npm run preview     # serve the production build
+npm run og-image    # regenerate the link-preview image
+```
 
-## Features
+The app is plain HTML, CSS, and JavaScript (ES modules), served and bundled
+with [Vite](https://vite.dev). Pushing to `main` runs the tests, builds, and
+deploys to GitHub Pages via `.github/workflows/static.yml`.
 
-### Available
+## Credits
 
-* **Base game features**<br>
-Placing marks and queens as well as detecting when the game has been completed or
-when the board has errors. Clearing the board, timing, etc. Consider checking out
-the [original game](https://linkedin/games/queens) for a comparison.
-
-* **Screenshot map loading**<br>
-Using opencv, you have the ability to load game maps from screenshots of the game.
-Using this feature you can even load maps that have been played through.
-However, the feature is unable to load maps that have error markings on them.
-It also fails if the screenshot includes has a block that is hovered on (with the mouse).
-
-### Features that I might implement if I get bored enough :sweat_smile:
-
-- **Map generation**<br>
-Add the ability to create new maps randomly.
-
-- **Auto X's**<br>
-Automatically place X's when a queen is placed. Originally, I didn't add this feature
-as a part of the base game because I actually enjoy the process of placing all the
-X's manually.
-
-## Challenges
-
-For this project my biggest challenge was probably dealing with all the abstraction
-I made early. In trying to keep the same abstractions alive, I found myself having
-to change large portions of some systems in order to add new features.
-
-Another challenge/something to note for future projects is that the development of
-this project was relatively quick at the beginning, but at some point in the middle
-of I ended up making none advancing changes. By non adavancing, I mean changes that
-make the code look pretty but don't really affect how the system behaves in the view
-point of a user. I'm a perfectionist (aren't we all) so I constantly get the urge to
-"improve" things.
-
-Oh yeah, I also had to learn a bit of opencv in the process of making this clone.
-So that was a rather fun challenge. Also, I'm sure I'll be able to use some of this
-knowledge for future projects (well atleast I won't have to learn all the basics
-all over again :sweat_smile:).
+Based on [queens-clone](https://github.com/sihlecodes/queens-clone) by
+Siphesihle Mhlongo, which provided the original game, controls, and screenshot
+loading. Released under the [MIT License](LICENSE).

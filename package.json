@@ -1,24 +1,28 @@
 {
-  "name": "queens-clone",
+  "name": "queendom",
   "version": "1.0.0",
-  "description": "A clone of the LinkedIn game 'Queens'.",
-  "main": "index.js",
+  "description": "Queendom: unlimited Queens-style puzzles with a board editor and screenshot import.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 3050",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "og-image": "node scripts/generate-og-image.cjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sihlcodes/queens-clone.git"
+    "url": "git+https://github.com/anindya-saha/queendom.git"
   },
   "author": "Siphesihle Mhlongo",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sihlcodes/queens-clone/issues"
+    "url": "https://github.com/anindya-saha/queendom/issues"
   },
-  "homepage": "https://github.com/sihlcodes/queens-clone#readme",
-  "dependencies": {
-    "connect-livereload": "^0.6.1",
-    "express": "^4.21.1",
-    "livereload": "^0.9.3"
+  "homepage": "https://anindya-saha.github.io/queendom/",
+  "devDependencies": {
+    "jpeg-js": "^0.4.4",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   }
 }

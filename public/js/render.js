@@ -4,6 +4,9 @@ import { Global } from './game.js';
 
 // as a rather useful side effect
 // this also dictates drawing order of layers
+const QUEEN_IMAGE = new URL('../images/queen.svg', import.meta.url).href;
+const GOLD_QUEEN_IMAGE = new URL('../images/queen-gold.svg', import.meta.url).href;
+
 const Layers = {
     BOARD: 'board',
    ERRORS: 'errors',
@@ -66,7 +69,10 @@ export class Renderer {
             mark.style.setProperty('--center-x', `${centerX}px`);
             mark.style.setProperty('--center-y', `${centerY}px`);
 
-            setTimeout(() => mark.classList.add('animate'), 150 * index);
+            setTimeout(() => {
+                mark.setAttribute('href', GOLD_QUEEN_IMAGE);
+                mark.classList.add('animate');
+            }, 150 * index);
             index++;
         }
     }
@@ -172,8 +178,7 @@ export class Renderer {
                 const x = pos.x + (TILE_SIZE - width) / 2;
                 const y = pos.y + (TILE_SIZE - height) / 2;
 
-                const queen = ctx.drawImageFromSource(
-                    './images/queen.svg', x, y, width, height);
+                const queen = ctx.drawImageFromSource(QUEEN_IMAGE, x, y, width, height);
 
                 queen.type = Marks.QUEEN;
                 break;

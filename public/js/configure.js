@@ -3,6 +3,7 @@ import { default_map } from './maps.js';
 export const Configuaration = {
     RENDER_OFFSET: 5,
     map: default_map,
+    auto_marks: true,
 
     theme: {
         invalid: {

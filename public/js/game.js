@@ -2,6 +2,7 @@ import { Renderer } from './render.js';
 import { Board, Marks } from './board.js';
 import { InputStateHandler } from './input_handler.js';
 import { Configuaration } from './configure.js';
+import { format_time } from './format.js';
 
 // Undefined properties are populated during runtime
 export const Global = {
@@ -13,11 +14,18 @@ export class Game {
         this.canvas = document.getElementById('canvas');
 
         const { clientWidth , clientHeight } = this.canvas;
+        this.canvas.setAttribute('viewBox', `0 0 ${clientWidth} ${clientHeight}`);
 
         this.board = new Board(Global.map, clientWidth, clientHeight);
         this.renderer = new Renderer(Global.theme, this.canvas, this.board);
         this.input = new InputStateHandler(this.board);
         this.timer = undefined;
+        this.revealing = false;
+
+        this.handlers = {
+            on_completed: undefined,
+        };
+
         this.reset();
     }
 
@@ -38,15 +46,10 @@ export class Game {
             const win_condition = Math.min(board.columns(), board.rows());
 
             if (num_queens === win_condition) {
-                clearInterval(this.timer);
-                this.completed = true;
+                this.complete();
 
-                renderer.clear_mouse_position();
-                renderer.animate_completion();
-                input.disable();
-
-                console.log('you win!');
-                document.getElementById('btn-clear').innerText = 'Restart';
+                if (!this.revealing)
+                    this.handlers.on_completed?.(this.get_queen_positions(), this.time);
             }
         };
 
@@ -56,6 +59,9 @@ export class Game {
                 this.update_elapsed_time()
             }, 1000);
         }
+
+        input.handlers.on_action_start = () => board.begin_action();
+        input.handlers.on_action_end = () => board.end_action();
 
         input.handlers.on_hover_changing = () => renderer.clear_mouse_position();
         input.handlers.on_hover_changed = ({x, y}) => renderer.render_mouse_position(x, y);
@@ -73,9 +79,11 @@ export class Game {
                 let event = tr(e);
                 let rect = this.getBoundingClientRect();
 
+                const scale = board.width / rect.width;
+
                 const global_pos = {
-                    x: event.clientX - rect.left,
-                    y: event.clientY - rect.top,
+                    x: (event.clientX - rect.left) * scale,
+                    y: (event.clientY - rect.top) * scale,
                 }
 
                 const relative_pos = board.to_relative_position(global_pos.x, global_pos.y);
@@ -101,12 +109,49 @@ export class Game {
         canvas.add_event_listener('touchend', first_changed_touch);
     }
 
-    update_elapsed_time() {
-        const mins = Math.floor(this.time / 60);
-        const secs = this.time % 60;
+    undo() {
+        if (!this.completed)
+            this.board.undo();
+    }
 
-        const time = document.getElementById('time');
-        time.innerText = `${mins}:${String(secs).padStart(2, '0')}`;
+    complete() {
+        clearInterval(this.timer);
+        this.completed = true;
+
+        this.renderer.clear_mouse_position();
+        this.renderer.animate_completion();
+        this.input.disable();
+        this.board.clear_history();
+
+        document.getElementById('btn-clear').innerText = 'Restart';
+    }
+
+    get_queen_positions() {
+        const positions = [];
+
+        this.board.iterate((x, y, color, mark) => {
+            if (mark === Marks.QUEEN)
+                positions.push([x, y]);
+        });
+
+        return positions;
+    }
+
+    show_solution(solution) {
+        this.reset();
+        this.board.clear();
+        this.renderer.clear_marks();
+
+        this.revealing = true;
+
+        for (const [x, y] of solution)
+            this.board.set_mark(x, y, Marks.QUEEN);
+
+        this.revealing = false;
+    }
+
+    update_elapsed_time() {
+        document.getElementById('time').innerText = format_time(this.time);
     }
 
     clear() {

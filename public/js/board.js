@@ -10,16 +10,18 @@ export const Marks = {
 export class Board {
     constructor(layout, width, height) {
         this.validator = new QueensValidator();
-        this.reset(layout);
-        this.width = width;
-        this.height = height;
 
         this.handlers = {
             on_mark_applied: undefined,
             on_invalid_queens: undefined,
             on_valid_queens: undefined,
             on_remove_queen: undefined,
+            on_history_changed: undefined,
         };
+
+        this.reset(layout);
+        this.width = width;
+        this.height = height;
 
         this.validator.handlers.on_valid_queens = (num_queens) => {
             this.handlers.on_valid_queens?.(num_queens);
@@ -54,8 +56,49 @@ export class Board {
 
     clear() {
         this.validator.clear();
+        this.auto_marks = new Set();
+        this.restoring = false;
         this.marks_grid = [];
         this.initialize_marks_grid();
+        this.clear_history();
+    }
+
+    clear_history() {
+        this.history = [];
+        this.current_action = undefined;
+        this.handlers.on_history_changed?.(0);
+    }
+
+    begin_action() {
+        this.current_action ??= [];
+    }
+
+    end_action() {
+        if (this.current_action?.length) {
+            this.history.push(this.current_action);
+            this.handlers.on_history_changed?.(this.history.length);
+        }
+
+        this.current_action = undefined;
+    }
+
+    undo() {
+        const action = this.history.pop();
+
+        if (!action)
+            return;
+
+        this.restoring = true;
+
+        for (const { x, y, mark, was_auto } of action.reverse()) {
+            this.set_mark(x, y, mark);
+
+            if (was_auto)
+                this.auto_marks.add(this.to_relative_int(x, y));
+        }
+
+        this.restoring = false;
+        this.handlers.on_history_changed?.(this.history.length);
     }
 
     initialize_marks_grid() {
@@ -185,15 +228,71 @@ export class Board {
             return;
 
         const color = this.get_color(x, y);
+        const index = this.to_relative_int(x, y);
+
+        if (!this.restoring)
+            this.current_action?.push({ x, y, mark: current_mark, was_auto: this.auto_marks.has(index) });
 
         this.marks_grid[y][x] = mark;
+        this.auto_marks.delete(index);
         this.handlers.on_mark_applied?.(x, y);
 
         if (mark === Marks.QUEEN) {
             this.validator.push_and_validate(x, y, color);
+
+            if (Global.auto_marks && !this.restoring)
+                this.apply_auto_marks(x, y);
         }
-        else if (mark === Marks.NONE && current_mark === Marks.QUEEN) {
+        else if (current_mark === Marks.QUEEN) {
             this.validator.remove_and_revalidate(x, y, color);
+
+            if (!this.restoring)
+                this.remove_stale_auto_marks();
+        }
+    }
+
+    get_blocked_cells(x, y) {
+        const cells = new Set([
+            ...this.get_cells_by_row(y),
+            ...this.get_cells_by_column(x),
+            ...this.get_cells_by_color(x, y),
+        ]);
+
+        for (let dy = -1; dy <= 1; dy++)
+            for (let dx = -1; dx <= 1; dx++)
+                if (this.within_bounds(x + dx, y + dy))
+                    cells.add(this.to_relative_int(x + dx, y + dy));
+
+        cells.delete(this.to_relative_int(x, y));
+        return cells;
+    }
+
+    apply_auto_marks(x, y) {
+        for (const cell of this.get_blocked_cells(x, y)) {
+            const pos = this.from_relative_int(cell);
+
+            if (this.get_mark(pos.x, pos.y) !== Marks.NONE)
+                continue;
+
+            this.set_mark(pos.x, pos.y, Marks.BASIC);
+            this.auto_marks.add(cell);
+        }
+    }
+
+    remove_stale_auto_marks() {
+        const blocked = new Set();
+
+        this.iterate((x, y, color, mark) => {
+            if (mark === Marks.QUEEN)
+                this.get_blocked_cells(x, y).forEach((cell) => blocked.add(cell));
+        });
+
+        for (const cell of [...this.auto_marks]) {
+            if (blocked.has(cell))
+                continue;
+
+            const pos = this.from_relative_int(cell);
+            this.set_mark(pos.x, pos.y, Marks.NONE);
         }
     }
 

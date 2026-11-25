@@ -44,3 +44,11 @@ export const default_map = [
     [1, 1, 1, 11, 11, 11, 11, 11, 11],
 ]
 
+
+
+export const puzzles = [
+    example_map,
+    default_map,
+    old_map_2,
+    old_map_1,
+];

@@ -20,6 +20,8 @@ export class InputStateHandler {
             on_hover_changing: undefined,
             on_hover_changed: undefined,
             on_first_click: undefined,
+            on_action_start: undefined,
+            on_action_end: undefined,
         }
     }
 
@@ -64,6 +66,7 @@ export class InputStateHandler {
 
             case 'mouseleave':
                 this.state = States.NOOP;
+                this.handlers.on_action_end?.();
                 this.handle_hover(relative_pos);
                 break;
         }
@@ -89,6 +92,7 @@ export class InputStateHandler {
         }
 
         this.state = this.get_next_state(mark);
+        this.handlers.on_action_start?.();
 
         this.starting_pos = {
             global: global_pos,
@@ -150,5 +154,7 @@ export class InputStateHandler {
 
         if(!this.mouse_moved)
             this.handlers.on_toggle?.(relative_pos);
+
+        this.handlers.on_action_end?.();
     }
 }

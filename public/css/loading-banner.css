@@ -3,7 +3,6 @@
 #loading-banner {
    --bar-width: 60px;
    --color-main: #695fdb;
-   --color-clone-text: var(--color-text);
    --close-animation-duration: 0.55s;
 
    position: absolute;
@@ -18,22 +17,6 @@
    top: -5px;
    color: var(--color-main);
    display: inline;
-}
-
-#loading-banner .subscript {
-   position: absolute;
-   font-size: 9pt;
-   right: 2px;
-   bottom: -4px;
-   color: var(--color-clone-text);
-}
-
-#loading-banner .watermark {
-   position: absolute;
-   right: var(--padding);
-   font-size: small;
-   font-weight: bold;
-   color: var(--color-main);
 }
 
 #loading-banner .hbox {
@@ -83,26 +66,12 @@ img.queen-icon {
    animation: sweep 0.7s ease-in-out infinite alternate;
 }
 
-.animate-closing .watermark {
-   animation: fade-out var(--close-animation-duration) ease-out forwards;
-}
-
 .animate-closing .vbox {
    animation: logo-close var(--close-animation-duration) ease-out forwards;
 }
 
 .animate-closing .spinner {
    animation: spinner-close var(--close-animation-duration) ease-out forwards;
-}
-
-@keyframes fade-out {
-60% {
-   opacity: 0.5;
-}
-
-100% {
-   opacity: 0;
-}
 }
 
 @keyframes sweep {

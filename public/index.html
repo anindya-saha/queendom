@@ -8,75 +8,174 @@
         <link rel="stylesheet" type="text/css" href="css/main.css">
         <link rel="stylesheet" type="text/css" href="css/loading-banner.css">
         <link rel="stylesheet" type="text/css" href="css/popup.css">
-        <title>Queens Clone</title>
+        <title>Queendom: Unlimited Queens Puzzles</title>
+        <meta name="description" content="Play LinkedIn-style Queens puzzles as often as you like. Draw your own boards or import them from screenshots, with auto X's, undo, and saved solutions.">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Queendom">
+        <meta property="og:description" content="Unlimited Queens puzzles. Draw your own boards or import them from screenshots.">
+        <meta property="og:url" content="%VITE_SITE_URL%">
+        <meta property="og:image" content="%VITE_SITE_URL%og-image.png">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta name="twitter:card" content="summary_large_image">
     </head>
     <body>
         <div id="main-content-banner" class="banner">
-            <div class="time-container"><img class="clock" src="images/clock.svg"/><span id="time">0:00</span></div>
+            <div id="puzzle-select" class="view">
+                <h1 class="view-title">Puzzles</h1>
 
-            <svg id="canvas">
-                <defs>
-                    <filter id="invalid_mark_filter">
-                        <feColorMatrix
-                        in="SourceGraphic"
-                        type="matrix"
-                        values="0 0 0 .66 0
-                                0 0 0 .02 0
-                                0 0 0 .03 0
-                                0 0 0 1.0 0" />
-                    </filter>
-                    <filter id="invalid_queen_filter">
-                        <feColorMatrix
-                        in="SourceGraphic"
-                        type="matrix"
-                        values="0 0 0 .44 0
-                                0 0 0 .00 0
-                                0 0 0 .04 0
-                                0 0 0 1.0 0" />
-                    </filter>
+                <p class="intro">
+                    Pick a puzzle to play, draw your own with <b>New puzzle</b>,
+                    or import one with <b>Load screenshot</b>.
+                </p>
 
-                    <pattern id="invalid_mark_pattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45)" x="0">
-                        <path d="M0,0 L0,20" style="stroke:black; stroke-width:6"/>
-                    </pattern>
-                </defs>
-            </svg>
+                <div class="features text-block">
+                    <b>Features</b>
+                    <ul>
+                        <li><b>Unlimited play:</b> replay any puzzle as often as you like. Solved puzzles show a ✓ and your best time.</li>
+                        <li><b>Board editor:</b> paint the color regions of a puzzle yourself. Load a picture of the board behind the grid and trace over it.</li>
+                        <li><b>Screenshot import:</b> load a screenshot of a Queens board and the regions are detected for you to check in the editor.</li>
+                        <li><b>Auto X's:</b> placing a queen marks every cell it blocks. Turn it off with the <b>Auto X</b> button.</li>
+                        <li><b>Undo:</b> step back through your moves with <b>Undo</b> or Ctrl/⌘+Z.</li>
+                        <li><b>Solutions:</b> once solved, a puzzle remembers its solution so you can view it again.</li>
+                        <li><b>Your library:</b> rename (✎), reorder (drag ⠿) and delete (×) puzzles. Everything is saved in this browser.</li>
+                    </ul>
+                </div>
 
-            <img id="load-target" class="not-rendered"/>
+                <img id="load-target" class="not-rendered"/>
 
-            <div class="controls">
-                <input  id="file-picker" class="not-rendered" type="file" accept="image/*"/>
-                <button id="btn-load" class="disabled" disabled>Loading Opencv...</button>
-                <button id="btn-clear">Clear</button>
+                <div class="controls">
+                    <input  id="file-picker" class="not-rendered" type="file" accept="image/*"/>
+                    <button id="btn-new-puzzle">New puzzle</button>
+                    <button id="btn-load">Load screenshot</button>
+                </div>
+
+                <div id="puzzle-grid"></div>
             </div>
 
-            <div class="instructions text-block">
-                <b>How to play</b>
-                <ol>
-                    <li>Your goal is to have <b>exactly one <img class="queen" src="images/queen.svg"/></b> in each <b>row, column, and color region.</b></li>
-                    <li>Tap once to place X and tap twice for <img class="queen" src="images/queen.svg"/></b>. Use X to mark where <img class="queen" src="images/queen.svg"/></b> cannot be placed.</li>
-                    <li>Two <img class="queen" src="images/queen.svg"/></b> cannot touch each other, not even diagonally.</li>
-                </ol>
+            <div id="editor-view" class="view split not-rendered">
+                <div class="view-main">
+                    <div class="game-header">
+                        <button id="btn-editor-back" class="btn-link">&larr; Puzzles</button>
+                        <div class="header-title">Board editor</div>
+                    </div>
+
+                    <div id="editor-board">
+                        <div id="editor-grid"></div>
+                        <img id="editor-trace" class="not-rendered"/>
+                    </div>
+
+                    <div class="controls">
+                        <input  id="editor-trace-picker" class="not-rendered" type="file" accept="image/*"/>
+                        <button id="btn-trace">Trace image</button>
+                        <button id="btn-move-trace" class="not-rendered">Move image</button>
+                        <button id="btn-remove-trace" class="not-rendered">Remove image</button>
+                    </div>
+                </div>
+
+                <div class="view-side">
+                    <div class="editor-fields">
+                        <label>Name <input id="editor-name" type="text"/></label>
+                        <label>Size <select id="editor-size"></select></label>
+                    </div>
+
+                    <div id="editor-palette"></div>
+
+                    <div id="editor-trace-settings" class="editor-fields not-rendered">
+                        <label>Opacity <input id="editor-opacity" type="range" min="0" max="100"/></label>
+                        <label>Zoom <input id="editor-zoom" type="range" min="50" max="400"/></label>
+                    </div>
+
+                    <div id="editor-issues" class="text-block"></div>
+
+                    <div class="controls">
+                        <button id="btn-editor-save">Save puzzle</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="examples text-block">
-                <b>Examples</b>
+            <div id="game-view" class="view split">
+                <div class="view-main">
+                    <div class="game-header">
+                        <button id="btn-back" class="btn-link">&larr; Puzzles</button>
+                        <div class="time-container"><img class="clock" src="images/clock.svg"/><span id="time">0:00</span></div>
+                    </div>
 
-                <div class="examples-grid">
-                    <div class="card">
-                        <img src="images/example_01.svg"/>
-                        <p>Each row can only have one <img class="queen" src="images/queen.svg"/>.</p>
+                    <svg id="canvas">
+                        <defs>
+                            <filter id="invalid_mark_filter">
+                                <feColorMatrix
+                                in="SourceGraphic"
+                                type="matrix"
+                                values="0 0 0 .66 0
+                                        0 0 0 .02 0
+                                        0 0 0 .03 0
+                                        0 0 0 1.0 0" />
+                            </filter>
+                            <filter id="invalid_queen_filter">
+                                <feColorMatrix
+                                in="SourceGraphic"
+                                type="matrix"
+                                values="0 0 0 .44 0
+                                        0 0 0 .00 0
+                                        0 0 0 .04 0
+                                        0 0 0 1.0 0" />
+                            </filter>
+
+                            <pattern id="invalid_mark_pattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45)" x="0">
+                                <path d="M0,0 L0,20" style="stroke:black; stroke-width:6"/>
+                            </pattern>
+                        </defs>
+                    </svg>
+
+                    <div class="controls">
+                        <button id="btn-auto-marks">Auto X: On</button>
+                        <button id="btn-solution" class="not-rendered">Solution</button>
+                        <button id="btn-undo" class="disabled" disabled>Undo</button>
+                        <button id="btn-clear">Clear</button>
                     </div>
-                    <div class="card">
-                        <img src="images/example_02.svg"/>
-                        <p>Each column can also only have one <img class="queen" src="images/queen.svg"/>.</p>
+                </div>
+
+                <div class="view-side">
+                    <div class="instructions text-block">
+                        <b>How to play</b>
+                        <ol>
+                            <li>Your goal is to have <b>exactly one <img class="queen" src="images/queen.svg"/></b> in each <b>row, column, and color region.</b></li>
+                            <li>Tap once to place X and tap twice for <img class="queen" src="images/queen.svg"/></b>. Use X to mark where <img class="queen" src="images/queen.svg"/></b> cannot be placed.</li>
+                            <li>Two <img class="queen" src="images/queen.svg"/></b> cannot touch each other, not even diagonally.</li>
+                        </ol>
                     </div>
-                    <div class="card">
-                        <img src="images/example_03.svg"/>
-                        <p>Each color region can also only have one <img class="queen" src="images/queen.svg"/>.</p>
+
+                    <div class="tips text-block">
+                        <b>Tips</b>
+                        <ul>
+                            <li>Drag across cells to place or clear many X's at once.</li>
+                            <li><b>Auto X</b> marks the cells a queen blocks; turn it off to place them yourself.</li>
+                            <li>Use <b>Undo</b> or Ctrl/⌘+Z to step back.</li>
+                        </ul>
                     </div>
-                    <div class="card">
-                        <img src="images/example_04.svg"/>
-                        <p>Two <img class="queen" src="images/queen.svg"/> cannot touch each other, not even diagonally.</p>
+
+                    <div class="examples text-block">
+                        <b>Examples</b>
+
+                        <div class="examples-grid">
+                            <div class="card">
+                                <img src="images/example_01.svg"/>
+                                <p>Each row can only have one <img class="queen" src="images/queen.svg"/>.</p>
+                            </div>
+                            <div class="card">
+                                <img src="images/example_02.svg"/>
+                                <p>Each column can also only have one <img class="queen" src="images/queen.svg"/>.</p>
+                            </div>
+                            <div class="card">
+                                <img src="images/example_03.svg"/>
+                                <p>Each color region can also only have one <img class="queen" src="images/queen.svg"/>.</p>
+                            </div>
+                            <div class="card">
+                                <img src="images/example_04.svg"/>
+                                <p>Two <img class="queen" src="images/queen.svg"/> cannot touch each other, not even diagonally.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,24 +183,25 @@
             <div id="loading-banner" class="banner">
                 <div class="hbox">
                     <div class="vbox">
-                        <h1>Queens
-                            <span class="subscript">clone</span>
-                        </h1>
+                        <h1>Queendom</h1>
                         <img class="queen-icon" src="images/queen-light.svg"/>
                     </div>
 
                     <span class="spinner"><span class="spinner-bar"></span></span>
                 </div>
-
-                <span class="watermark">@sihlecodes</span>
             </div>
 
             <div id="error-popup" class="text-block">
-                <h1>Could not load the screenshot</h1>
+                <h1>Could not read the screenshot</h1>
                 <div class="reason">
                     This could be due to a number of reasons, including,
                     but not limited to, low image resolutions, uneven lighting conditions,
                     or other objects being too close to the board.
+                </div>
+
+                <div class="reason">
+                    The screenshot has been placed behind the board editor,
+                    so you can paint the regions over it instead.
                 </div>
 
                 <h2>General tips and notes for better results</h2>
@@ -114,16 +214,6 @@
             </div>
         </div>
 
-        <script type="text/javascript">
-            function enable_load_button() {
-                const btn_load = document.getElementById('btn-load');
-                btn_load.innerText = "Load screenshot";
-                btn_load.classList.remove('disabled');
-                btn_load.removeAttribute('disabled');
-            }
-        </script>
-
         <script src="main.js" type="module"></script>
-        <script async src="js/vendor/opencv.js" type="text/javascript" onload="enable_load_button()"></script>
     </body>
 </html>

@@ -34,7 +34,7 @@ Three views in `public/index.html` (`.view` elements, switched by `show_view()` 
 - `editor.js` — `BoardEditor`: paint regions with a palette, resize, trace over an image (opacity/zoom/pan). Edits palette indices `0..N-1`; saves `{ map, color_map }`. `layout_validation.js` checks each of the N colors forms exactly one connected region.
 - `puzzle_select.js` — renders puzzle tiles (preview, rename, delete, drag-handle reordering via pointer events).
 - `load_map.js` — `load_map_from_image()` finds the board via OpenCV (Canny + contours) and returns `{ color_map, map }`. If tile contours don't form a perfect square grid (faint separators), it estimates the grid from median tile size; if color thresholding yields the wrong number of colors (uneven lighting), it merges adjacent tiles by color similarity until there are N regions.
-- `maps.js` — hard-coded maps (2D arrays of color-region IDs, keys into `theme.color_map`); `puzzles` lists the built-ins.
+- `maps.js` — hard-coded maps (2D arrays of color-region IDs, keys into `theme.color_map`); `puzzles` lists the built-ins as `{ name, map }`. Append new built-ins at the end: ids are `builtin-<index>`, so reordering would mismatch users' saved progress. A saved puzzle with the same region layout as a built-in is merged into it on load (progress kept).
 
 Components talk through `handlers` objects of optional callbacks (`handlers.on_x?.(...)`), e.g. validator → board → game → renderer. Follow this pattern when adding events.
 

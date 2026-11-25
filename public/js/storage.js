@@ -1,5 +1,5 @@
 import { Configuaration } from './configure.js';
-import { puzzles as built_in_maps } from './maps.js';
+import { puzzles as built_in_puzzles } from './maps.js';
 
 const PUZZLES_KEY = 'queens-clone.puzzles';
 const LEGACY_SAVED_PUZZLES_KEY = 'queens-clone.saved-puzzles';
@@ -46,35 +46,70 @@ function write_entries(puzzles) {
     localStorage.setItem(PUZZLES_KEY, JSON.stringify(entries));
 }
 
+function to_layout_key(map) {
+    const labels = new Map();
+
+    return JSON.stringify(map.map((row) => row.map((value) => {
+        if (!labels.has(value))
+            labels.set(value, labels.size);
+
+        return labels.get(value);
+    })));
+}
+
+function merge_progress(built_in, saved) {
+    if (!saved.solution)
+        return;
+
+    built_in.solution ??= saved.solution;
+    built_in.best_time = Math.min(built_in.best_time ?? Infinity, saved.best_time ?? Infinity);
+
+    if (!built_in.solved_at || (saved.solved_at && saved.solved_at < built_in.solved_at))
+        built_in.solved_at = saved.solved_at;
+}
+
 export function load_puzzles() {
     const entries = read_entries();
     const ids = new Set(entries.map((entry) => entry.id));
 
-    built_in_maps.forEach((map, index) => {
+    built_in_puzzles.forEach(({ name }, index) => {
         const id = BUILT_IN_PREFIX + index;
 
         if (!ids.has(id))
-            entries.push({ id, name: `Puzzle ${index + 1}` });
+            entries.push({ id, name });
     });
 
-    return entries.flatMap((entry) => {
+    const puzzles = entries.flatMap((entry) => {
         if (!entry.id.startsWith(BUILT_IN_PREFIX))
             return [entry];
 
-        const map = built_in_maps[entry.id.slice(BUILT_IN_PREFIX.length)];
+        const built_in = built_in_puzzles[entry.id.slice(BUILT_IN_PREFIX.length)];
 
-        if (!map)
+        if (!built_in)
             return [];
 
-        return [{ ...entry, map, color_map: Configuaration.theme.color_map, built_in: true }];
+        return [{ ...entry, map: built_in.map, color_map: Configuaration.theme.color_map, built_in: true }];
+    });
+
+    const built_ins_by_layout = new Map(puzzles
+        .filter((puzzle) => puzzle.built_in)
+        .map((puzzle) => [to_layout_key(puzzle.map), puzzle]));
+
+    return puzzles.filter((puzzle) => {
+        const built_in = !puzzle.built_in && built_ins_by_layout.get(to_layout_key(puzzle.map));
+
+        if (built_in)
+            merge_progress(built_in, puzzle);
+
+        return !built_in;
     });
 }
 
 export function has_puzzle(map, except_id) {
-    const serialized_map = JSON.stringify(map);
+    const layout_key = to_layout_key(map);
 
     return load_puzzles().some((puzzle) =>
-        puzzle.id !== except_id && JSON.stringify(puzzle.map) === serialized_map);
+        puzzle.id !== except_id && to_layout_key(puzzle.map) === layout_key);
 }
 
 export function add_puzzle({ name, color_map, map }) {

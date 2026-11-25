@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { puzzles as built_in_maps } from '../public/js/maps.js';
+import { puzzles as built_in_puzzles } from '../public/js/maps.js';
 import {
     load_puzzles, has_puzzle, add_puzzle, update_puzzle,
     rename_puzzle, delete_puzzle, reorder_puzzles, record_solution,
@@ -23,7 +23,7 @@ beforeEach(() => {
 
 describe('puzzle storage', () => {
     it('lists built-in puzzles by default', () => {
-        expect(names()).toEqual(built_in_maps.map((_, i) => `Puzzle ${i + 1}`));
+        expect(names()).toEqual(built_in_puzzles.map(({ name }) => name));
         expect(load_puzzles().every((puzzle) => puzzle.built_in)).toBe(true);
     });
 
@@ -106,6 +106,20 @@ describe('puzzle storage', () => {
 
     it('does not update built-in puzzles', () => {
         update_puzzle('builtin-0', { name: 'Changed', map: [[0]], color_map: ['red'] });
-        expect(load_puzzles()[0].map).toEqual(built_in_maps[0]);
+        expect(load_puzzles()[0].map).toEqual(built_in_puzzles[0].map);
+    });
+
+    it('merges saved copies of built-in puzzles, keeping their progress', () => {
+        const relabeled = built_in_puzzles[1].map.map((row) => row.map((value) => value + 20));
+
+        store['queens-clone.puzzles'] = JSON.stringify([
+            { id: 'saved-copy', name: 'Copy', map: relabeled, color_map: {}, solution: [[0, 0]], best_time: 42 },
+        ]);
+
+        const puzzles = load_puzzles();
+
+        expect(puzzles.some((puzzle) => puzzle.id === 'saved-copy')).toBe(false);
+        expect(puzzles.find((puzzle) => puzzle.id === 'builtin-1')).toMatchObject({ solution: [[0, 0]], best_time: 42 });
+        expect(has_puzzle(relabeled)).toBe(true);
     });
 });

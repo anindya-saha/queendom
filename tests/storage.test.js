@@ -51,6 +51,15 @@ describe('puzzle storage', () => {
         expect(load_puzzles().map((puzzle) => puzzle.id)).toEqual([...ids].reverse());
     });
 
+    it('moves the library from the queens-clone key to the queendom key', () => {
+        store['queens-clone.puzzles'] = JSON.stringify([{ id: 'builtin-0', name: 'Easy', best_time: 7, solution: [[0, 0]] }]);
+
+        expect(load_puzzles()[0]).toMatchObject({ name: 'Easy', best_time: 7 });
+        expect(load_puzzles()[0]).toMatchObject({ name: 'Easy', best_time: 7 });
+        expect(store['queens-clone.puzzles']).toBeUndefined();
+        expect(JSON.parse(store['queendom.puzzles'])[0].name).toBe('Easy');
+    });
+
     it('migrates puzzles saved in the legacy format', () => {
         store['queens-clone.saved-puzzles'] = JSON.stringify([{ map: [[1]], color_map: ['blue'] }]);
 
@@ -112,7 +121,7 @@ describe('puzzle storage', () => {
     it('merges saved copies of built-in puzzles, keeping their progress', () => {
         const relabeled = built_in_puzzles[1].map.map((row) => row.map((value) => value + 20));
 
-        store['queens-clone.puzzles'] = JSON.stringify([
+        store['queendom.puzzles'] = JSON.stringify([
             { id: 'saved-copy', name: 'Copy', map: relabeled, color_map: {}, solution: [[0, 0]], best_time: 42 },
         ]);
 

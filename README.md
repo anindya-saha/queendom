@@ -46,6 +46,12 @@ queens can't touch each other, not even diagonally. Tap a cell once for an X
 Your puzzles, names, order, and solutions are stored in your browser's local
 storage. They stay on your device and are not uploaded anywhere.
 
+## Video guides
+
+| How to play | Draw a board | How to trace |
+|:---:|:---:|:---:|
+| [![How to play](https://img.youtube.com/vi/I67BGwshLJA/hqdefault.jpg)](https://youtu.be/I67BGwshLJA) | [![Draw a board](https://img.youtube.com/vi/PTEHBzd4eiY/hqdefault.jpg)](https://youtu.be/PTEHBzd4eiY) | [![How to trace](https://img.youtube.com/vi/SlOGaBR7MQ4/hqdefault.jpg)](https://youtu.be/SlOGaBR7MQ4) |
+
 ## Running locally
 
 Requires [Node.js](https://nodejs.org) 20.19 or newer.

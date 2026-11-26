@@ -228,6 +228,8 @@ img.clock {
    cursor: pointer;
 }
 
+.editor-swatch:not(.used):not(.selected) { opacity: 0.55; }
+
 .editor-swatch.selected {
    outline: 3px solid black;
    outline-offset: 2px;
@@ -333,6 +335,22 @@ img.clock {
    margin: 0;
    gap: var(--paragraph-spacing);
 }
+
+.video-links {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 6px 14px;
+   font-size: var(--font-size-normal);
+}
+
+.video-link {
+   color: #695fdb;
+   font-weight: bold;
+   text-decoration: none;
+}
+
+.video-link:hover { text-decoration: underline; }
 
 .intro {
    margin: 0;

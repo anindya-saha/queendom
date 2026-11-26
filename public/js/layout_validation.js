@@ -32,15 +32,21 @@ function count_regions(map, color) {
     return regions;
 }
 
+export function get_used_colors(map) {
+    return [...new Set(map.flat())];
+}
+
 export function find_layout_issues(map) {
     const issues = [];
+    const used_colors = get_used_colors(map);
 
-    for (let color = 0; color < map.length; color++) {
+    if (used_colors.length !== map.length)
+        issues.push({ type: 'color_count', used: used_colors.length, required: map.length });
+
+    for (const color of [...used_colors].sort((a, b) => a - b)) {
         const regions = count_regions(map, color);
 
-        if (regions === 0)
-            issues.push({ color, type: 'unused' });
-        else if (regions > 1)
+        if (regions > 1)
             issues.push({ color, type: 'split', regions });
     }
 

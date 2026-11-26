@@ -1,7 +1,8 @@
 import { Configuaration } from './configure.js';
 import { puzzles as built_in_puzzles } from './maps.js';
 
-const PUZZLES_KEY = 'queens-clone.puzzles';
+const PUZZLES_KEY = 'queendom.puzzles';
+const PREVIOUS_PUZZLES_KEY = 'queens-clone.puzzles';
 const LEGACY_SAVED_PUZZLES_KEY = 'queens-clone.saved-puzzles';
 const BUILT_IN_PREFIX = 'builtin-';
 
@@ -23,6 +24,14 @@ function read_entries() {
 
     if (entries)
         return entries;
+
+    const previous = read_json(PREVIOUS_PUZZLES_KEY);
+
+    if (previous) {
+        localStorage.setItem(PUZZLES_KEY, JSON.stringify(previous));
+        localStorage.removeItem(PREVIOUS_PUZZLES_KEY);
+        return previous;
+    }
 
     const legacy = read_json(LEGACY_SAVED_PUZZLES_KEY) ?? [];
 

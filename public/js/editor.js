@@ -1,5 +1,5 @@
 import { Configuaration } from './configure.js';
-import { find_layout_issues } from './layout_validation.js';
+import { find_layout_issues, get_used_colors } from './layout_validation.js';
 
 const MIN_SIZE = 4;
 const MAX_SIZE = Object.keys(Configuaration.theme.color_map).length;
@@ -25,9 +25,13 @@ function normalize_puzzle(map, color_map) {
     };
 }
 
-function describe_issue({ color, type, regions }) {
-    if (type === 'unused')
-        return `Color ${color + 1} isn't used yet.`;
+function describe_issue({ color, type, regions, used, required }) {
+    if (type === 'color_count') {
+        const difference = Math.abs(required - used);
+        const change = used < required ? 'add' : 'remove';
+
+        return `${used} of ${required} colors used: ${change} ${difference} color${difference === 1 ? '' : 's'}.`;
+    }
 
     return `Color ${color + 1} is split into ${regions} separate areas.`;
 }
@@ -167,17 +171,14 @@ export class BoardEditor {
         this.map[y][x] = this.selected_color;
         cell.style.backgroundColor = this.palette[this.selected_color];
         this.dirty = true;
+        this.render_palette();
         this.render_issues();
     }
 
     resize(size) {
         this.map = Array.from({ length: size }, (_, y) =>
-            Array.from({ length: size }, (_, x) => {
-                const color = this.map[y]?.[x] ?? 0;
-                return color < size ? color : 0;
-            }));
+            Array.from({ length: size }, (_, x) => this.map[y]?.[x] ?? 0));
 
-        this.selected_color = Math.min(this.selected_color, size - 1);
         this.dirty = true;
         this.render();
     }
@@ -225,10 +226,13 @@ export class BoardEditor {
         const { palette } = this.elements;
         palette.replaceChildren();
 
-        for (let color = 0; color < this.size(); color++) {
+        const used_colors = get_used_colors(this.map);
+
+        for (let color = 0; color < this.palette.length; color++) {
             const swatch = document.createElement('button');
             swatch.className = 'editor-swatch';
             swatch.classList.toggle('selected', color === this.selected_color);
+            swatch.classList.toggle('used', used_colors.includes(color));
             swatch.style.backgroundColor = this.palette[color];
             swatch.innerText = color + 1;
             swatch.title = `Color ${color + 1}`;
@@ -284,11 +288,13 @@ export class BoardEditor {
 
         const { name } = this.elements;
 
+        const used_colors = get_used_colors(this.map);
+
         const saved = this.handlers.on_save?.({
             id: this.id,
             name: name.value.trim() || name.placeholder,
-            map: this.map.map((row) => [...row]),
-            color_map: this.palette.slice(0, this.size()),
+            map: this.map.map((row) => row.map((color) => used_colors.indexOf(color))),
+            color_map: used_colors.map((color) => this.palette[color]),
         });
 
         if (saved)
